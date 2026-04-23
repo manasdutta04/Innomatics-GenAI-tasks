@@ -7,7 +7,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
 class IngestionPipeline:
-    def __init__(self, db_path: str = "data/chroma_db"):
+    def __init__(self, db_path: str = "data/chroma_db", base_url: str = "http://localhost:11434"):
         self.db_path = db_path
         self.embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         self.text_splitter = RecursiveCharacterTextSplitter(
