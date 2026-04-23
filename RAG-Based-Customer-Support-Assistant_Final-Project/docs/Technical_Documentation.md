@@ -42,7 +42,14 @@ Human intervention is triggered when the `Classifier` detects a sensitive intent
     *   "How do I install the app?" (Expected: Routine RAG response)
 *   **Validation**: Checked against the "faq.pdf" content to ensure no hallucinations.
 
-## 7. Future Enhancements
+## 7. Remote Access (Deployment)
+To use local Ollama models with a public deployment (like Streamlit Cloud):
+1.  **Expose Ollama**: Use a tool like `ngrok` or `cloudflared` to create a public tunnel to your local port 11434.
+    *   Example: `ngrok http 11434`
+2.  **Configure Host**: Ensure Ollama is listening on all interfaces by setting the environment variable `OLLAMA_HOST=0.0.0.0` before starting the Ollama server.
+3.  **Update URL**: Enter the public tunnel URL into the **"🔗 Ollama Server URL"** field in the iSupport assistant sidebar.
+
+## 8. Future Enhancements
 *   **Multi-document Support**: Allowing multiple PDFs to be uploaded.
 *   **Memory Integration**: Persistent chat history across sessions.
 *   **Feedback Loop**: User "thumbs up/down" to refine embeddings.

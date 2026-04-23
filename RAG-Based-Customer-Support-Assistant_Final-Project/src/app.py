@@ -62,37 +62,30 @@ if "thread_id" not in st.session_state:
 def get_engine():
     return CustomerSupportGraph()
 
-def check_ollama_connection():
+def check_ollama_connection(url="http://localhost:11434"):
     import http.client
+    from urllib.parse import urlparse
     try:
-        conn = http.client.HTTPConnection("localhost", 11434, timeout=2)
+        parsed = urlparse(url)
+        port = parsed.port if parsed.port else (80 if parsed.scheme == "http" else 443)
+        conn = http.client.HTTPConnection(parsed.hostname, port, timeout=2)
         conn.request("GET", "/")
         response = conn.getresponse()
         return response.status == 200
     except Exception:
         return False
 
-if "engine" not in st.session_state:
-    connected = check_ollama_connection()
-    if not connected:
-        st.error("❌ **Ollama Not Detected**")
-        st.markdown("""
-            **How to connect:**
-            1. Install [Ollama](https://ollama.com).
-            2. Run `ollama run qwen2.5:7b` in your terminal.
-            3. Refresh this page.
-        """)
-        st.stop()
-    
-    with st.spinner("🚀 Initializing AI Engine (Ollama + LangGraph)..."):
-        st.session_state.engine = get_engine()
-
-if "ingestion" not in st.session_state:
-    st.session_state.ingestion = IngestionPipeline()
-
 # --- Sidebar ---
 with st.sidebar:
-    st.title("📂 Knowledge Base")
+    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=100)
+    st.title("Settings")
+    
+    # Ollama URL Setting
+    ollama_url = st.text_input("🔗 Ollama Server URL", value="http://localhost:11434", help="Change this if using ngrok or a remote server.")
+    st.session_state.ollama_url = ollama_url
+
+    st.markdown("---")
+    st.subheader("📁 Knowledge Base")
     st.markdown("Upload a PDF to ground the assistant's responses.")
     
     uploaded_file = st.file_uploader("Drop PDF here", type="pdf")
@@ -108,23 +101,22 @@ with st.sidebar:
             
             for percent_complete in range(100):
                 import time
-                time.sleep(0.01)
+                time.sleep(0.001)
                 my_bar.progress(percent_complete + 1, text=progress_text)
             
             success = st.session_state.ingestion.process_pdf(file_path)
             if success:
                 st.success("✅ Knowledge base updated!")
-                st.balloons()
             else:
                 st.error("❌ Failed to process PDF.")
 
     st.markdown("---")
     st.subheader("🖥️ System Health")
-    ollama_ok = check_ollama_connection()
+    ollama_ok = check_ollama_connection(st.session_state.ollama_url)
     if ollama_ok:
-        st.success("Ollama: Online")
+        st.success(f"Ollama: Online")
     else:
-        st.error("Ollama: Offline")
+        st.error(f"Ollama: Offline")
         
     db_path = "data/chroma_db"
     if os.path.exists(db_path):
@@ -138,6 +130,25 @@ with st.sidebar:
         st.session_state.messages = []
         st.session_state.thread_id = str(uuid.uuid4())
         st.rerun()
+
+if "engine" not in st.session_state:
+    connected = check_ollama_connection(st.session_state.ollama_url)
+    if not connected:
+        st.error(f"❌ **Ollama Not Detected at {st.session_state.ollama_url}**")
+        st.markdown(f"""
+            **How to connect:**
+            1. Ensure Ollama is running.
+            2. If remote, ensure the URL is public (e.g., ngrok).
+            3. On your local machine, run: `set OLLAMA_HOST=0.0.0.0` before starting Ollama.
+            4. Refresh this page.
+        """)
+        st.stop()
+    
+    with st.spinner("🚀 Initializing AI Engine..."):
+        st.session_state.engine = CustomerSupportGraph(base_url=st.session_state.ollama_url)
+
+if "ingestion" not in st.session_state:
+    st.session_state.ingestion = IngestionPipeline()
 
 # --- Main UI ---
 st.title("🤖 iSupport assistant")

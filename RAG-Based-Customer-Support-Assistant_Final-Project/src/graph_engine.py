@@ -18,9 +18,9 @@ class AgentState(TypedDict):
     approval_granted: bool
 
 class CustomerSupportGraph:
-    def __init__(self, model_name: str = "qwen2.5:7b"):
-        self.llm = ChatOllama(model=model_name, temperature=0)
-        self.retriever = IngestionPipeline().get_retriever()
+    def __init__(self, model_name: str = "qwen2.5:7b", base_url: str = "http://localhost:11434"):
+        self.llm = ChatOllama(model=model_name, temperature=0, base_url=base_url)
+        self.retriever = IngestionPipeline(base_url=base_url).get_retriever()
         self.memory = MemorySaver()
         self.workflow = self._create_workflow()
 
