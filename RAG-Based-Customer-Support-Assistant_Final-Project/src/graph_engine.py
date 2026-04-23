@@ -1,4 +1,10 @@
 import os
+import sys
+
+# Add the project root to sys.path to resolve 'src' imports on Streamlit Cloud
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.append(project_root)
 from typing import TypedDict, Annotated, Sequence, Literal
 import operator
 

@@ -1,6 +1,13 @@
 import streamlit as st
 import os
+import sys
 import uuid
+
+# Add the project root to sys.path to resolve 'src' imports on Streamlit Cloud
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 from langchain_core.messages import HumanMessage, AIMessage
 from src.graph_engine import CustomerSupportGraph
 from src.ingestion import IngestionPipeline
